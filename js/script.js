@@ -1,0 +1,1 @@
+console.log('Casa Botânica OS v0.1 iniciada');
