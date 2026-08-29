@@ -1,0 +1,156 @@
+media:
+  input: media
+  output: /media
+  rename: safe
+  categories: [image, video]
+
+settings:
+  commit:
+    identity: user
+    templates:
+      create: "conteudo: adicionar {path}"
+      update: "conteudo: atualizar {path}"
+      delete: "conteudo: remover {path}"
+      rename: "conteudo: renomear {oldPath} para {newPath}"
+
+components:
+  status:
+    type: select
+    label: Status
+    required: true
+    options:
+      values:
+        - value: published
+          label: Publicado
+        - value: coming_soon
+          label: Em breve
+        - value: development
+          label: Em desenvolvimento
+        - value: hidden
+          label: Oculto
+  image:
+    type: image
+    label: Imagem
+    options:
+      categories: [image]
+      rename: safe
+
+content:
+  - name: site
+    label: Configurações do site
+    type: file
+    path: content/site.json
+    format: json
+    operations:
+      delete: false
+    fields:
+      - {name: site_name, label: Nome do site, type: string, required: true}
+      - {name: signature, label: Assinatura, type: string}
+      - {name: home_intro, label: Texto principal da Home, type: text}
+      - {name: seo_description, label: Descrição para Google, type: text}
+      - {name: location_general, label: Localização geral, type: string}
+      - {name: site_url, label: URL oficial do site, type: string, description: "Preencha depois que o domínio estiver definido."}
+      - {name: hero_image, label: Foto principal da Home, component: image}
+      - {name: theodoro_image, label: Foto do Theodoro trabalhando, component: image}
+      - {name: logo, label: Logo oficial, component: image}
+      - {name: contact_email, label: E-mail de contato, type: string}
+      - name: links
+        label: Links principais
+        type: object
+        fields:
+          - {name: airbnb, label: Airbnb, type: string}
+          - {name: whatsapp, label: WhatsApp, type: string}
+      - name: social
+        label: Redes sociais
+        type: object
+        fields:
+          - {name: instagram, label: Instagram, type: string}
+          - {name: tiktok, label: TikTok, type: string}
+          - {name: youtube, label: YouTube, type: string}
+  - name: hospedagens
+    label: Hospedagens
+    type: collection
+    path: content/hospedagens
+    format: json
+    filename: "{slug}.json"
+    view: {primary: title, fields: [title, status], sort: [title, status]}
+    fields:
+      - {name: title, label: Nome, type: string, required: true}
+      - {name: slug, label: Endereço da página, type: string, required: true, pattern: "^[a-z0-9-]+$"}
+      - {name: status, component: status}
+      - {name: summary, label: Resumo, type: text, required: true}
+      - {name: concept_title, label: Título do conceito, type: string}
+      - {name: description, label: Descrição completa, type: text}
+      - {name: cover, label: Foto principal, component: image}
+      - {name: gallery, label: Galeria, type: image, options: {multiple: true, categories: [image], rename: safe}}
+      - {name: highlights, label: Diferenciais, type: string, list: true}
+      - {name: technology, label: Tecnologia e conforto, type: string, list: true}
+  - name: projetos
+    label: Projetos
+    type: collection
+    path: content/projetos
+    format: json
+    filename: "{slug}.json"
+    view: {primary: title, fields: [title, category, status], search: [title, category, summary]}
+    fields:
+      - {name: title, label: Título, type: string, required: true}
+      - {name: slug, label: Endereço da página, type: string, required: true, pattern: "^[a-z0-9-]+$"}
+      - {name: status, component: status}
+      - {name: category, label: Categoria, type: string}
+      - {name: summary, label: Resumo, type: text, required: true}
+      - {name: cover, label: Imagem principal, component: image}
+      - {name: gallery, label: Galeria, type: image, options: {multiple: true, categories: [image], rename: safe}}
+      - {name: problem, label: Problema inicial, type: text}
+      - {name: idea, label: Ideia, type: text}
+      - {name: materials, label: Materiais, type: string, list: true}
+      - {name: tools, label: Ferramentas, type: string, list: true}
+      - {name: measurements, label: Medidas, type: string}
+      - {name: cost, label: Custo aproximado, type: string}
+      - {name: process, label: Processo, type: string, list: true}
+      - {name: result, label: Resultado, type: text}
+  - name: diy
+    label: DIY / Ateliê Botânico
+    type: collection
+    path: content/diy
+    format: json
+    filename: "{slug}.json"
+    view: {primary: title, fields: [title, difficulty, status], search: [title, summary]}
+    fields:
+      - {name: title, label: Título, type: string, required: true}
+      - {name: slug, label: Endereço da página, type: string, required: true, pattern: "^[a-z0-9-]+$"}
+      - {name: status, component: status}
+      - {name: summary, label: Resumo, type: text, required: true}
+      - {name: cover, label: Foto principal, component: image}
+      - {name: difficulty, label: Dificuldade, type: string}
+      - {name: time, label: Tempo, type: string}
+      - {name: materials, label: Materiais, type: string, list: true}
+      - {name: tools, label: Ferramentas, type: string, list: true}
+      - name: steps
+        label: Passos
+        type: object
+        list: true
+        fields:
+          - {name: title, label: Título do passo, type: string}
+          - {name: text, label: Instrução, type: text}
+          - {name: image, label: Foto, component: image}
+      - {name: tips, label: Dicas, type: text}
+  - name: produtos
+    label: Loja / Produtos
+    type: collection
+    path: content/produtos
+    format: json
+    filename: "{slug}.json"
+    view: {primary: title, fields: [title, availability, status], search: [title, summary]}
+    fields:
+      - {name: title, label: Nome, type: string, required: true}
+      - {name: slug, label: Endereço da página, type: string, required: true, pattern: "^[a-z0-9-]+$"}
+      - {name: status, component: status}
+      - {name: summary, label: Resumo, type: text, required: true}
+      - {name: description, label: Descrição, type: text}
+      - {name: cover, label: Foto principal, component: image}
+      - {name: price, label: Preço, type: string}
+      - {name: availability, label: Disponibilidade, type: string}
+      - {name: dimensions, label: Dimensões, type: string}
+      - {name: materials, label: Materiais, type: string}
+      - {name: colors, label: Cores, type: string}
+      - {name: production_time, label: Tempo de produção, type: string}
