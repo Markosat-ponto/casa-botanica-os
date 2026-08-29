@@ -1,0 +1,17 @@
+name: Verificar site
+on:
+  push:
+    branches: [site-rebuild]
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Gerar site
+        run: python build.py
+      - name: Verificar site
+        run: python tests/site_check.py
