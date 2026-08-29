@@ -1,1 +1,1 @@
-console.log('Casa Botânica OS v0.1 iniciada');
+const button=document.querySelector('.menu-toggle');const nav=document.querySelector('.main-nav');if(button&&nav){button.addEventListener('click',()=>{const open=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!open));nav.classList.toggle('open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a')){button.setAttribute('aria-expanded','false');nav.classList.remove('open')}})}
