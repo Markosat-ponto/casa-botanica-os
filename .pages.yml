@@ -20,13 +20,13 @@ components:
     required: true
     options:
       values:
-        - value: published
+        - name: published
           label: Publicado
-        - value: coming_soon
+        - name: coming_soon
           label: Em breve
-        - value: development
+        - name: development
           label: Em desenvolvimento
-        - value: hidden
+        - name: hidden
           label: Oculto
   image:
     type: image
