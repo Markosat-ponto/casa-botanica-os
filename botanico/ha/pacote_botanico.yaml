@@ -1,0 +1,90 @@
+# Pacote Botânico v2 — Home Assistant
+# STATUS: NÃO INSTALADO (aguardando aprovação do Theo, lote único).
+# Só ACRESCENTA entidades novas. Não altera nada que já existe.
+# Os helpers podem ser criados pela UI (Configurações > Dispositivos e
+# serviços > Ajudantes) ou pelo MCP; os nomes abaixo são os esperados pelo
+# adaptador botanico/ha/pyscript/botanico_app.py.
+
+input_select:
+  botanico_modo_execucao:
+    name: "Botânico — modo de execução física"
+    options: [simulado, autonomo]
+    initial: simulado          # reinicia SEMPRE em simulado após restart
+    icon: mdi:shield-lock
+
+input_boolean:
+  botanico_suspender_acoes:
+    name: "Botânico — SUSPENDER ações autônomas"
+    icon: mdi:hand-back-left
+  portao_fotocelula_validada:
+    name: "Portão — fotocélula instalada e validada (só o Theo)"
+    icon: mdi:motion-sensor
+
+input_text:
+  botanico_status:
+    name: "Botânico — último evento"
+    max: 255
+
+automation:
+  - id: botanico_alerta_mudanca_de_seguranca
+    alias: "Botânico — avisar o Theo quando modo/segurança mudar"
+    description: >-
+      Qualquer mudança no modo de execução, na suspensão ou na fotocélula
+      gera aviso imediato. Proteção contra alteração indevida (o login do
+      hóspede no HA não tem permissão por entidade).
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id:
+          - input_select.botanico_modo_execucao
+          - input_boolean.botanico_suspender_acoes
+          - input_boolean.portao_fotocelula_validada
+        not_to: [unavailable, unknown]
+    actions:
+      - action: notify.mobile_app_iphone
+        continue_on_error: true
+        data:
+          title: "🌿 Botânico — configuração de segurança alterada"
+          message: >-
+            {{ trigger.to_state.name }}: {{ trigger.from_state.state }} →
+            {{ trigger.to_state.state }} (por {{ trigger.to_state.context.user_id
+            or 'automação' }}).
+          data:
+            push:
+              interruption-level: time-sensitive
+      - action: notify.mobile_app_realme_theo_android
+        continue_on_error: true
+        data:
+          title: "🌿 Botânico — configuração de segurança alterada"
+          message: >-
+            {{ trigger.to_state.name }}: {{ trigger.from_state.state }} →
+            {{ trigger.to_state.state }}.
+
+# Painel administrativo (Lovelace, dashboard novo "botanico-central").
+# Criar via Configurações > Painéis > Adicionar painel > "Do zero", colar
+# em "Editar em YAML". Visível só para administradores.
+#
+# views:
+#   - title: Botânico
+#     path: central
+#     cards:
+#       - type: tile
+#         entity: input_boolean.botanico_suspender_acoes
+#         name: SUSPENDER ações autônomas
+#         color: red
+#       - type: entities
+#         title: Estado
+#         entities:
+#           - input_select.botanico_modo_execucao
+#           - input_boolean.portao_fotocelula_validada
+#           - cover.portao_door_1
+#           - input_boolean.hospede_acesso_ativo
+#           - input_text.botanico_status
+#       - type: logbook
+#         title: O que aconteceu (24 h)
+#         hours_to_show: 24
+#         target:
+#           entity_id:
+#             - input_text.botanico_status
+#             - cover.portao_door_1
+#             - input_boolean.hospede_acesso_ativo
