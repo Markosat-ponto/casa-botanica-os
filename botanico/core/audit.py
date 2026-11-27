@@ -9,6 +9,7 @@ import re
 from datetime import datetime
 
 _PADROES = [
+    (re.compile(r"(?i)\bHM[A-Z0-9]{6,10}\b"), "[código da reserva]"),
     (re.compile(r"\b\d{4,}\b"), "[número]"),
     (re.compile(r"(?i)(senha|token|password|bearer|api[_-]?key)\s*[:=]?\s*\S+"),
      r"\1 [oculto]"),

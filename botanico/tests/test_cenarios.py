@@ -320,7 +320,8 @@ class Unidades(unittest.TestCase):
                          "pergunta_livre")
 
     def test_redacao(self):
-        t = audit.redigir("codigo 482913 senha: abc123 token=xyz")
+        t = audit.redigir("codigo 482913 senha: abc123 token=xyz HMFICTICIO1")
+        self.assertNotIn("HMFICTICIO1", t)
         self.assertNotIn("482913", t)
         self.assertNotIn("abc123", t)
 
