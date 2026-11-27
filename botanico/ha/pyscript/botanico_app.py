@@ -29,7 +29,11 @@ import json
 import time
 from datetime import datetime
 
-from botanico.core import agent, audit, config, gate, guests
+import botanico.core.agent as agent
+import botanico.core.audit as audit
+import botanico.core.config as config
+import botanico.core.gate as gate
+import botanico.core.guests as guests
 
 COVER = config.PORTAO["entidade_cover"]
 CAMERA = config.PORTAO["camera_entidade"]

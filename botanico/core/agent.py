@@ -16,7 +16,12 @@ O "mundo" (Home Assistant real ou simulador) é injetado e precisa ter:
 
 import re
 
-from botanico.core import audit, config, gate, guests, intents, policy
+import botanico.core.audit as audit
+import botanico.core.config as config
+import botanico.core.gate as gate
+import botanico.core.guests as guests
+import botanico.core.intents as intents
+import botanico.core.policy as policy
 
 TEXTO = {
     "explica_expirou": ("Identifiquei que seu acesso aos controles expirou às "

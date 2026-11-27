@@ -16,7 +16,7 @@ Fatos de hardware (confirmados em 27/11/2026):
 Nada aqui depende de IA. A câmera só pode bloquear.
 """
 
-from botanico.core import config
+import botanico.core.config as config
 
 DISPONIVEIS = ("open", "closed")
 

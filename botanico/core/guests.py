@@ -9,7 +9,7 @@ import hashlib
 import hmac
 from datetime import timedelta
 
-from botanico.core import config
+import botanico.core.config as config
 
 
 def hash_codigo(codigo, sal):
