@@ -1,5 +1,16 @@
 # Changelog — Botânico
 
+## 2026-11-27 — identidade: telefone não prova quem é o hóspede
+
+- O telefone cadastrado numa reserva pode ser de outra pessoa.
+- Pedidos sensíveis fora do painel (saída/portão, horário de saída,
+  extensão) agora exigem o código da reserva do Airbnb ou o código de
+  acesso. Perguntas gerais não exigem.
+- Número fora do cadastro que envia um código de reserva válido passa a ser
+  reconhecido naquela estadia; sem código, não recebe resposta.
+- Cadastro da reserva vem do calendário (datas + código em hash).
+- Códigos de reserva mascarados nos registros. 35 testes aprovados.
+
 ## 2026-11-27 — canais: painel em modo suporte + WhatsApp (aprovado pelo Theo)
 
 - `input_boolean.hospede_modo_suporte_pos_check_out` (novo).

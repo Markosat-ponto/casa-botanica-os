@@ -54,8 +54,9 @@ ou parar sobre algo) e escala com prioridade.
 
 ## Protocolo de saída assistida (caso real)
 
-1. Recebe a mensagem e identifica a reserva (painel = quarto; WhatsApp =
-   telefone; site = código). Desconhecido → pede código (3 tentativas).
+1. Recebe a mensagem e identifica a reserva. No painel, o dispositivo do
+   quarto já identifica. Fora dele, o telefone é só um indício: pedidos
+   sensíveis exigem o código da reserva ou o código de acesso (3 tentativas).
 2. Confere se está na **janela de saída**: do check-in até 5 h após o fim da
    credencial (mínimo até 18h do dia). A saída não depende da credencial.
 3. Se a credencial expirou, explica o motivo com o horário.

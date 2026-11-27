@@ -49,8 +49,8 @@ fotocélula (a maioria tem) e se já existe uma instalada e não ligada.
       puxar a conversa para o WhatsApp quando o hóspede escrever no Airbnb.
 - [ ] Verificar (passivo) se mensagens que o Theo envia a terceiros entram
       na automação de comandos do WhatsApp (opção "self messages" ligada).
-- [ ] Telefone do hóspede precisa estar em `input_text.hospede_telefone_whatsapp`
-      enquanto o acesso estiver ativo, para o WhatsApp reconhecê-lo.
+- [ ] Revisar o fluxo de envio das credenciais ao hóspede (detalhes no
+      relatório privado).
 - [ ] Cronometrar o portão junto com o agente (Etapa C).
 - [ ] Decidir fotocélula e botão físico.
 - [ ] Ajustar regra de late checkout (padrão 13h) e diárias no HA (hoje R$ 0).
