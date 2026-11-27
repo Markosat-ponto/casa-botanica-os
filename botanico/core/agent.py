@@ -64,8 +64,10 @@ TEXTO = {
                      "prioridade; se puder, confira se nada está na passagem."),
     "suspenso": ("As ações automáticas estão pausadas pelo anfitrião neste "
                  "momento. Avisei o Theo com prioridade para ajudar você."),
-    "pede_codigo": ("Para sua segurança, preciso confirmar a reserva. Qual é o "
-                    "código de acesso que você recebeu?"),
+    "pede_codigo": ("Para sua segurança, preciso confirmar a reserva antes. "
+                    "Me envie o código da reserva do Airbnb (começa com HM e "
+                    "aparece no app, em Viagens > sua reserva) ou o código de "
+                    "acesso do painel."),
     "codigo_invalido": "Não encontrei uma reserva ativa com esse código.",
     "codigo_bloqueado": ("Não consegui validar a reserva. Por segurança, "
                          "avisei o Theo para falar com você."),
@@ -102,6 +104,8 @@ class Sessao:
         self.alerta_veiculo = False
         self.obstaculos = 0
         self.intencao_pendente = None
+        self.texto_pendente = ""
+        self.verificado = False
         self.veiculo_confirmado = False
 
 
@@ -148,9 +152,32 @@ class Botanico:
 
         if s.reserva is None:
             s.reserva = guests.identificar(self.cad, canal, remetente, agora_dt)
+            s.verificado = (s.reserva is not None and
+                            canal in guests.CANAIS_VERIFICADOS)
 
         if s.estado == "aguardando_codigo":
+            if guests.parece_codigo(texto):
+                return self._validar_codigo(s, texto, intent)
+            s.estado = "inicio"        # mudou de assunto: segue normal
+            s.intencao_pendente = None
+
+        # Código enviado espontaneamente (ex.: número que não está no cadastro).
+        if intent == "codigo_acesso" and not s.verificado and \
+                guests.parece_codigo(texto):
             return self._validar_codigo(s, texto, intent)
+
+        # Pedidos sensíveis exigem identidade comprovada (código), não só o
+        # telefone: o número do Airbnb pode ser de outra pessoa.
+        sensiveis = ("saida_portao", "fechar_portao", "late_checkout",
+                     "extensao")
+        if intent in sensiveis and not s.verificado and s.estado in (
+                "inicio", "concluido", "escalado", "bloqueado"):
+            s.estado = "aguardando_codigo"
+            s.intencao_pendente = intent
+            s.texto_pendente = texto
+            self._reg(s, "identidade", "pedido sensível (%s): pedindo código"
+                      % intent)
+            return [TEXTO["pede_codigo"]]
 
         # Estados do protocolo de saída têm prioridade sobre perguntas livres.
         if s.estado == "aguardando_animais":
@@ -190,16 +217,20 @@ class Botanico:
 
     # ------------------------------------------------------------ identidade
     def _validar_codigo(self, s, texto, intent):
-        codigo = "".join([c for c in texto if c.isdigit()])
-        r, st = self.cad.por_codigo(s.id, codigo, self.m.agora_dt())
+        r, st = self.cad.por_codigo(s.id, texto, self.m.agora_dt())
         if r:
             s.reserva = r
+            s.verificado = True
             s.estado = "inicio"
             self._reg(s, "identidade", "reserva validada por código")
-            pend = s.intencao_pendente
-            s.intencao_pendente = None
-            if pend == "saida_portao":
-                return self._iniciar_saida(s, "site")
+            pend, txt = s.intencao_pendente, s.texto_pendente
+            s.intencao_pendente, s.texto_pendente = None, ""
+            if pend in ("saida_portao", "fechar_portao"):
+                return self._iniciar_saida(s, "verificado")
+            if pend == "late_checkout":
+                return self._late_checkout(s, txt)
+            if pend == "extensao":
+                return self._extensao(s)
             return ["Reserva confirmada, %s. Como posso ajudar?" %
                     r.primeiro_nome()]
         if st == "bloqueado" or (s.id in self.cad.tentativas and

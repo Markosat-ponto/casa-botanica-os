@@ -22,7 +22,8 @@ def _so_digitos(txt):
 
 class Reserva:
     def __init__(self, id, nome, quarto, checkin, checkout, telefone="",
-                 codigo_hash="", credencial_expira=None, saida_informada=None):
+                 codigo_hash="", credencial_expira=None, saida_informada=None,
+                 codigo_reserva_hash=""):
         self.id = id
         self.nome = nome
         self.quarto = quarto
@@ -30,6 +31,9 @@ class Reserva:
         self.checkout = checkout          # datetime
         self.telefone = _so_digitos(telefone)
         self.codigo_hash = codigo_hash
+        # Código da reserva do Airbnb (HM...), em hash. Só quem fez a reserva
+        # vê no app; é a prova de identidade fora do painel.
+        self.codigo_reserva_hash = codigo_reserva_hash
         self.credencial_expira = credencial_expira or checkout
         self.saida_informada = saida_informada
 
@@ -83,18 +87,44 @@ class Cadastro:
                 return r
         return None
 
-    def por_codigo(self, sessao_id, codigo, agora, cfg=None):
+    def por_codigo(self, sessao_id, texto, agora, cfg=None):
+        """Valida o código de ACESSO (dígitos) ou o código da RESERVA (HM...).
+        Retorna (reserva|None, "ok"|"invalido"|"bloqueado")."""
         cfg = cfg or config.HOSPEDE
         n = self.tentativas.get(sessao_id, 0)
         if n >= cfg["max_tentativas_codigo"]:
             return None, "bloqueado"
-        h = hash_codigo(codigo, self.sal)
+        cod_reserva = extrair_codigo_reserva(texto)
+        digitos = _so_digitos(texto)
+        h_res = hash_codigo(cod_reserva, self.sal) if cod_reserva else ""
+        h_acc = hash_codigo(digitos, self.sal) if len(digitos) >= 4 else ""
         for r in self.ativas_ou_em_suporte(agora):
-            if r.codigo_hash and hmac.compare_digest(r.codigo_hash, h):
+            if h_res and r.codigo_reserva_hash and hmac.compare_digest(
+                    r.codigo_reserva_hash, h_res):
+                self.tentativas.pop(sessao_id, None)
+                return r, "ok"
+            if h_acc and r.codigo_hash and hmac.compare_digest(
+                    r.codigo_hash, h_acc):
                 self.tentativas.pop(sessao_id, None)
                 return r, "ok"
         self.tentativas[sessao_id] = n + 1
         return None, "invalido"
+
+
+def extrair_codigo_reserva(texto):
+    """Código de reserva do Airbnb: 'HM' + 8 letras/números (aceita 6 a 10)."""
+    import re
+    m = re.search(r"\b(HM[A-Z0-9]{6,10})\b", str(texto or "").upper())
+    return m.group(1) if m else ""
+
+
+def parece_codigo(texto):
+    return bool(extrair_codigo_reserva(texto)) or len(_so_digitos(texto)) >= 4
+
+
+# Canais onde o próprio canal já prova a identidade (dispositivo logado no
+# quarto). Telefone NÃO prova: o número do Airbnb pode ser de outra pessoa.
+CANAIS_VERIFICADOS = ("painel",)
 
 
 def identificar(cadastro, canal, remetente, agora):

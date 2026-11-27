@@ -6,6 +6,7 @@ fechada INTENCOES: qualquer coisa fora dela vira "pergunta_livre".
 O texto do hóspede nunca é tratado como instrução de sistema.
 """
 
+import re
 import unicodedata
 
 INTENCOES = (
@@ -74,6 +75,8 @@ def classificar_local(texto):
         return "pergunta_livre"
     if _tem(t, EMERGENCIA):
         return "emergencia"
+    if re.search(r"\bhm[a-z0-9]{6,10}\b", t):
+        return "codigo_acesso"
     so_digitos = t.replace(" ", "")
     if so_digitos.isdigit() and 4 <= len(so_digitos) <= 12:
         return "codigo_acesso"

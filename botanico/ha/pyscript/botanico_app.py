@@ -187,6 +187,7 @@ def _montar_cadastro():
             checkin=datetime.fromisoformat(d["checkin"]),
             checkout=datetime.fromisoformat(d["checkout"]),
             telefone=d.get("telefone", ""), codigo_hash=d.get("codigo_hash", ""),
+            codigo_reserva_hash=d.get("codigo_reserva_hash", ""),
             credencial_expira=datetime.fromisoformat(
                 d.get("credencial_expira") or d["checkout"])))
     return cad
@@ -264,8 +265,12 @@ def botanico_mensagem(canal=None, remetente=None, texto=None, **kw):
             return
         # 2) só responde hóspede da reserva atual / janela de saída;
         #    número desconhecido: não responde (o aviso ao Theo já existe)
-        if guests.identificar(bot.cad, "whatsapp", remetente,
-                              datetime.now()) is None:
+        sess = bot.sessoes.get("whatsapp:" + remetente)
+        ja_verificado = sess is not None and sess.verificado
+        conhecido = guests.identificar(bot.cad, "whatsapp", remetente,
+                                       datetime.now()) is not None
+        traz_codigo = bool(guests.extrair_codigo_reserva(texto))
+        if not (ja_verificado or conhecido or traz_codigo):
             _AUD.registrar(datetime.now().isoformat(timespec="seconds"),
                            "ignorado", "whatsapp",
                            "mensagem de número que não é hóspede atual")
@@ -302,37 +307,46 @@ def _tick():
 @time_trigger("period(now, 5min)")
 @state_trigger("input_boolean.hospede_acesso_ativo")
 def botanico_snapshot_hospede(**kw):
-    """Guarda (com o código em hash) os dados do hóspede enquanto o acesso
-    está ativo, e registra a hora em que a credencial expirou."""
+    """Mantém o cadastro da reserva atual a partir do calendário do Airbnb
+    (datas + código da reserva em hash) e, enquanto o acesso estiver ativo,
+    dos helpers do painel (nome, telefone, código de acesso em hash).
+    Sobrevive ao check-out, quando o encerramento apaga os helpers."""
+    import re as _re
     dados = task.executor(_ler_json, ARQ_HOSPEDE) or {}
-    if state.get("input_boolean.hospede_acesso_ativo") == "on":
-        try:
-            r = service.call("calendar", "get_events", return_response=True,
-                             entity_id="calendar.reservas_quarto_oliva",
-                             duration={"days": 30})
-            ev = r["calendar.reservas_quarto_oliva"]["events"]
-            atual = [e for e in ev if str(e["start"]) <=
-                     datetime.now().isoformat() <= str(e["end"]) + "T23:59"]
-        except Exception:
-            atual = []
+    agora_iso = datetime.now().isoformat()
+    try:
+        r = service.call("calendar", "get_events", return_response=True,
+                         entity_id="calendar.reservas_quarto_oliva",
+                         duration={"days": 30})
+        ev = r["calendar.reservas_quarto_oliva"]["events"]
+        atual = [e for e in ev if str(e["start"]) <= agora_iso <=
+                 str(e["end"])[:10] + "T23:59"]
+    except Exception:
+        atual = []
+    if atual:
+        e = atual[0]
+        ini, fim = str(e["start"]), str(e["end"])
+        if str(dados.get("checkin", ""))[:10] != ini[:10]:
+            dados = {}              # reserva nova: não herda a anterior
+        dados["checkin"] = (ini if "T" in ini else ini + "T14:00:00")[:19]
+        dados["checkout"] = (fim if "T" in fim else fim + "T11:00:00")[:19]
+        m = _re.search(r"details/(HM[A-Z0-9]+)", str(e.get("description", "")))
+        if m:
+            dados["codigo_reserva_hash"] = guests.hash_codigo(m.group(1), _SAL)
+        dados["quarto"] = "oliva"
+        dados["id"] = ini[:10]
+    if state.get("input_boolean.hospede_acesso_ativo") == "on" and dados:
         codigo = state.get("input_text.hospede_codigo_de_acesso_atual") or ""
-        if atual:
-            ini_atual = str(atual[0]["start"])[:10]
-            if str(dados.get("checkin", ""))[:10] != ini_atual:
-                dados = {}          # reserva nova: não herda dados da anterior
-        dados.update({
-            "nome": state.get("input_text.hospede_nome") or dados.get("nome", ""),
-            "telefone": state.get("input_text.hospede_telefone_whatsapp")
-            or dados.get("telefone", ""),
-            "codigo_hash": guests.hash_codigo(codigo, _SAL) if codigo
-            else dados.get("codigo_hash", ""),
-            "quarto": "oliva",
-        })
-        if atual:
-            ini, fim = str(atual[0]["start"]), str(atual[0]["end"])
-            dados["checkin"] = (ini if "T" in ini else ini + "T14:00:00")[:19]
-            dados["checkout"] = (fim if "T" in fim else fim + "T11:00:00")[:19]
+        tel = state.get("input_text.hospede_telefone_whatsapp") or ""
+        nome = state.get("input_text.hospede_nome") or ""
+        if nome:
+            dados["nome"] = nome
+        if tel:
+            dados["telefone"] = tel
+        if codigo:
+            dados["codigo_hash"] = guests.hash_codigo(codigo, _SAL)
+        dados["acesso_ja_ativo"] = True
         dados["credencial_expira"] = None
-    elif dados and not dados.get("credencial_expira"):
+    elif dados.get("acesso_ja_ativo") and not dados.get("credencial_expira"):
         dados["credencial_expira"] = datetime.now().isoformat(timespec="seconds")
     task.executor(_gravar_json, ARQ_HOSPEDE, dados)

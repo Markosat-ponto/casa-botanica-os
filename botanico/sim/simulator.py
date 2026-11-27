@@ -157,6 +157,7 @@ def reserva_exemplo(cadastro, inicio, saida_hora=8):
         checkout=hoje + timedelta(hours=11),
         telefone="+55 62 99999-1234",
         codigo_hash=guests.hash_codigo("482913", cadastro.sal),
+        codigo_reserva_hash=guests.hash_codigo("HMTESTE123", cadastro.sal),
         credencial_expira=hoje + timedelta(hours=saida_hora),
     )
     cadastro.adicionar(r)

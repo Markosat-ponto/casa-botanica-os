@@ -25,6 +25,8 @@ class CasoReal(unittest.TestCase):
     def test_fluxo_completo_com_fotocelula(self):
         m, bot = novo_cenario(fotocelula=True)
         r = falar(bot, ZAP, "Não consigo abrir o portão para sair")
+        self.assertIn("código da reserva", r)      # telefone não basta
+        r = falar(bot, ZAP, "o código é HMTESTE123")
         self.assertIn("expirou às 08h00", r)
         self.assertIn("cachorros", r)
         r = falar(bot, ZAP, "Sim, estão")
@@ -48,6 +50,7 @@ class CasoReal(unittest.TestCase):
         """Hóspede avisa que saiu antes do portão parar: espera e fecha."""
         m, bot = novo_cenario(fotocelula=True)
         falar(bot, ZAP, "preciso sair")
+        falar(bot, ZAP, "HMTESTE123")
         falar(bot, ZAP, "sim")
         m.avancar(12, bot)
         r = falar(bot, ZAP, "já saí")
@@ -60,6 +63,7 @@ class CasoReal(unittest.TestCase):
         """Configuração real hoje: abre, mas NÃO fecha sozinho."""
         m, bot = novo_cenario(fotocelula=False)
         falar(bot, ZAP, "preciso tirar o carro")
+        falar(bot, ZAP, "HMTESTE123")
         falar(bot, ZAP, "sim")
         m.avancar(40, bot)
         r = falar(bot, ZAP, "já saí")
@@ -214,6 +218,56 @@ class Identidade(unittest.TestCase):
         r = falar(bot, ZAP, "482913")
         self.assertIn("Não encontrei", r)
         self.assertEqual(m.portao.pulsos_recebidos, 0)
+
+
+class TelefoneNaoProva(unittest.TestCase):
+    """Caso de 27/11/2026: o telefone do Airbnb era de uma amiga do hóspede."""
+
+    def test_numero_da_reserva_sem_codigo_nao_abre(self):
+        m, bot = novo_cenario()
+        r = falar(bot, ZAP, "abre o portão")
+        self.assertIn("código da reserva", r)
+        r = falar(bot, ZAP, "sim")              # não é código: muda de assunto
+        self.assertEqual(m.portao.pulsos_recebidos, 0)
+
+    def test_numero_da_reserva_com_codigo_errado(self):
+        m, bot = novo_cenario()
+        falar(bot, ZAP, "quero sair com o carro")
+        r = falar(bot, ZAP, "HMERRADO99")
+        self.assertIn("Não encontrei", r)
+        self.assertEqual(m.portao.pulsos_recebidos, 0)
+
+    def test_codigo_de_acesso_tambem_vale(self):
+        m, bot = novo_cenario()
+        falar(bot, ZAP, "quero sair com o carro")
+        r = falar(bot, ZAP, "482913")
+        self.assertIn("cachorros", r)
+
+    def test_pergunta_geral_nao_exige_codigo(self):
+        m, bot = novo_cenario()
+        r = falar(bot, ZAP, "tem cafeteira?")
+        self.assertNotIn("código da reserva", r)
+
+    def test_late_checkout_pelo_whatsapp_exige_codigo(self):
+        m, bot = novo_cenario(hora=8, minuto=0)
+        r = falar(bot, ZAP, "Posso ficar até 12h?")
+        self.assertIn("código da reserva", r)
+        r = falar(bot, ZAP, "HMTESTE123")
+        self.assertIn("12:00", r)
+
+    def test_numero_desconhecido_com_codigo_da_reserva(self):
+        """O hóspede real escreve de um número que não está no cadastro."""
+        m, bot = novo_cenario()
+        u = ("whatsapp", "5511955554444")
+        r = falar(bot, u, "Oi, minha reserva é HMTESTE123")
+        self.assertIn("Reserva confirmada", r)
+        r = falar(bot, u, "quero sair com o carro")
+        self.assertIn("cachorros", r)
+
+    def test_painel_continua_sem_pedir_codigo(self):
+        m, bot = novo_cenario()
+        r = falar(bot, PAINEL, "quero sair")
+        self.assertIn("cachorros", r)
 
 
 class Atendimento(unittest.TestCase):
