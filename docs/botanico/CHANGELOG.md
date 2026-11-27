@@ -1,5 +1,13 @@
 # Changelog — Botânico
 
+## 2026-11-27 — mascote e agente do hóspede v2 (preparado)
+
+- Mascote oficial em `botanico/assets/mascote/` (avatar redondo, quadrado,
+  corpo inteiro transparente); artefato de brilho removido.
+- Identidade/personalidade em `botanico/knowledge/persona.md`.
+- Novo prompt do agente do hóspede em `botanico/ha/prompt_hospede_v2.md`
+  (não aplicado; dados privados entram só no HA).
+
 ## 2026-11-27 — alterações no HA autorizadas pelo Theo
 
 - Agente de conversa do hóspede: removido o acesso a dispositivos (Assist).
