@@ -1,5 +1,22 @@
 # Changelog — Botânico
 
+## 2026-11-27 — canais: painel em modo suporte + WhatsApp (aprovado pelo Theo)
+
+- `input_boolean.hospede_modo_suporte_pos_check_out` (novo).
+- `script.hospede_encerrar_acesso`: deixou de trocar a senha e derrubar
+  sessões; agora liga o modo suporte. Backup de edição no HA.
+- `script.hospede_encerrar_suporte` (novo): desliga modo suporte, troca senha
+  do visitante, derruba sessões. Automação "Hóspede — encerrar modo suporte
+  (18h ou 5 h após o check-out)"; acesso de novo hóspede só desliga o modo.
+- Painel do hóspede: no modo suporte aparecem só o aviso "Precisa de ajuda?"
+  e o chat. Mensagens do chat no modo suporte vão para o Botânico v2
+  (automação do painel alterada; backup no HA).
+- WhatsApp: automação "Botânico v2 — WhatsApp de hóspede para o Botânico".
+  Responde em texto, do número do Theo, só para o telefone da reserva
+  atual/janela de saída. Ignora o Theo, grupos, mídia e eco das próprias
+  respostas. Teste com número fictício: ignorado (sem envio).
+- BOTÂNICO — Central: modo suporte e botão "Encerrar suporte agora".
+
 ## 2026-11-27 — lote instalado no HA (aprovado pelo Theo)
 
 - Helpers: `input_select.botanico_modo_de_execucao_fisica` (inicia e volta

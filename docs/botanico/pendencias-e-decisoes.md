@@ -41,9 +41,16 @@ fotocélula (a maioria tem) e se já existe uma instalada e não ligada.
 - [x] Etapa A instalada em modo simulado (27/11/2026).
 - [x] Correção do agente de conversa do hóspede (aplicada em 27/11/2026).
 - [ ] Novo agente do hóspede (Botânico v2) com identidade do mascote.
-- [ ] Canal de suporte após o check-out. O painel não serve (o hóspede é
-      deslogado). Proposta: WhatsApp — a mensagem do hóspede ao número da
-      casa é identificada pelo telefone e entra no Botânico v2.
+- [x] Canal pós check-out: painel em modo suporte até 18h + WhatsApp
+      (27/11/2026).
+- [ ] Airbnb: sem API de mensagens. Hoje o Botânico só lê o e-mail de aviso
+      e repassa ao Theo. Decidir: mensagem programada no Airbnb indicando o
+      WhatsApp/painel do Botânico (o Theo configura no app) e/ou o Botânico
+      puxar a conversa para o WhatsApp quando o hóspede escrever no Airbnb.
+- [ ] Verificar (passivo) se mensagens que o Theo envia a terceiros entram
+      na automação de comandos do WhatsApp (opção "self messages" ligada).
+- [ ] Telefone do hóspede precisa estar em `input_text.hospede_telefone_whatsapp`
+      enquanto o acesso estiver ativo, para o WhatsApp reconhecê-lo.
 - [ ] Cronometrar o portão junto com o agente (Etapa C).
 - [ ] Decidir fotocélula e botão físico.
 - [ ] Ajustar regra de late checkout (padrão 13h) e diárias no HA (hoje R$ 0).
