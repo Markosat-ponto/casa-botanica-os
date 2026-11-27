@@ -10,6 +10,7 @@
 - Painel admin novo `botanico-central` (só administradores).
 - Painel do hóspede: avatar do chat trocado pelo mascote oficial (imagem via
   jsDelivr fixada no commit). Backup do painel salvo no HA antes.
+  Conferido pelo Theo no painel: exibindo corretamente.
 - Agente do hóspede: prompt v2 aplicado (identidade do mascote), sem acesso
   a dispositivos. Backup salvo no HA antes.
 - Integração Downloader (pasta `/config/pyscript`) e pyscript com
