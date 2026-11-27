@@ -30,7 +30,7 @@ continua bloqueado.
 
 **Etapa E — fechamento autônomo.** Só após instalar fotocélula na central do
 motor, testar reversão com obstáculo (caixa de papelão) e o Theo ligar
-`input_boolean.portao_fotocelula_validada`.
+`input_boolean.portao_fotocelula_instalada_e_validada_so_o_theo`.
 
 ## Recuperação
 

@@ -21,7 +21,7 @@ Respostas saem por evento + helper do painel:
 Segurança:
 - Só chama script.portao_abrir / script.portao_fechar (já existentes).
 - Nunca usa script.portao_alternar_inteligente (alterna sem saber posição).
-- Começa em modo "simulado"; só o Theo muda input_select.botanico_modo_execucao.
+- Começa em modo "simulado"; só o Theo muda input_select.botanico_modo_de_execucao_fisica.
 - Agente LLM usado aqui precisa estar SEM acesso a dispositivos.
 """
 
@@ -33,10 +33,10 @@ from botanico.core import agent, audit, config, gate, guests
 
 COVER = config.PORTAO["entidade_cover"]
 CAMERA = config.PORTAO["camera_entidade"]
-H_MODO = "input_select.botanico_modo_execucao"
-H_SUSPENSO = "input_boolean.botanico_suspender_acoes"
-H_FOTOCELULA = "input_boolean.portao_fotocelula_validada"
-H_STATUS = "input_text.botanico_status"
+H_MODO = "input_select.botanico_modo_de_execucao_fisica"
+H_SUSPENSO = "input_boolean.botanico_suspender_acoes_autonomas"
+H_FOTOCELULA = "input_boolean.portao_fotocelula_instalada_e_validada_so_o_theo"
+H_STATUS = "input_text.botanico_ultimo_evento"
 AGENTE_LLM = "conversation.botanico_hospede"
 AI_TASK = "ai_task.openai_ai_task"
 NOTIFY = ["mobile_app_iphone", "mobile_app_realme_theo_android"]

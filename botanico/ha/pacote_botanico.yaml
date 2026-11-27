@@ -36,9 +36,9 @@ automation:
     triggers:
       - trigger: state
         entity_id:
-          - input_select.botanico_modo_execucao
-          - input_boolean.botanico_suspender_acoes
-          - input_boolean.portao_fotocelula_validada
+          - input_select.botanico_modo_de_execucao_fisica
+          - input_boolean.botanico_suspender_acoes_autonomas
+          - input_boolean.portao_fotocelula_instalada_e_validada_so_o_theo
         not_to: [unavailable, unknown]
     actions:
       - action: notify.mobile_app_iphone
@@ -69,22 +69,22 @@ automation:
 #     path: central
 #     cards:
 #       - type: tile
-#         entity: input_boolean.botanico_suspender_acoes
+#         entity: input_boolean.botanico_suspender_acoes_autonomas
 #         name: SUSPENDER ações autônomas
 #         color: red
 #       - type: entities
 #         title: Estado
 #         entities:
-#           - input_select.botanico_modo_execucao
-#           - input_boolean.portao_fotocelula_validada
+#           - input_select.botanico_modo_de_execucao_fisica
+#           - input_boolean.portao_fotocelula_instalada_e_validada_so_o_theo
 #           - cover.portao_door_1
 #           - input_boolean.hospede_acesso_ativo
-#           - input_text.botanico_status
+#           - input_text.botanico_ultimo_evento
 #       - type: logbook
 #         title: O que aconteceu (24 h)
 #         hours_to_show: 24
 #         target:
 #           entity_id:
-#             - input_text.botanico_status
+#             - input_text.botanico_ultimo_evento
 #             - cover.portao_door_1
 #             - input_boolean.hospede_acesso_ativo

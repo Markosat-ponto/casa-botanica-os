@@ -8,7 +8,7 @@
 | 2 — regra | acesso temporário, alterar horário de saída, extensão, reiniciar equipamento não crítico, acesso excepcional | regra pré-aprovada em `config.REGRAS_NIVEL_2` |
 | 3 — Theo | cancelar, desconto, reembolso, preço, pagamento, regras, segurança, excluir registro, acesso admin, desativar proteção | só canal autenticado do Theo |
 
-- **Suspensão imediata** (`input_boolean.botanico_suspender_acoes`): para
+- **Suspensão imediata** (`input_boolean.botanico_suspender_acoes_autonomas`): para
   ações físicas e de nível 2. Respostas, orientação, registro e emergência
   continuam. Estado desconhecido do helper = tratado como suspenso.
 - **Emergência:** responde na hora com SAMU 192, Bombeiros 193, Polícia 190 e
