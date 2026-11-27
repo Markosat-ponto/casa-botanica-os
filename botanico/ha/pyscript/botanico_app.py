@@ -1,6 +1,6 @@
 """Adaptador pyscript: liga o núcleo do Botânico ao Home Assistant real.
 
-STATUS: NÃO INSTALADO. Escrito contra a API do pyscript e as entidades
+STATUS: instalado em modo SIMULADO (27/11/2026). Escrito contra a API do pyscript e as entidades
 confirmadas em 27/11/2026, mas ainda não executado no HA. Instalação e
 validação seguem docs/botanico/06-manutencao.md.
 
@@ -44,7 +44,9 @@ ARQ_AUDIT = "/config/botanico/auditoria.jsonl"
 ARQ_HOSPEDE = "/config/botanico/hospede_atual.json"
 
 
+@pyscript_compile
 def _ler_json(caminho):
+    import json
     try:
         with open(caminho, encoding="utf-8") as f:
             return json.load(f)
@@ -52,7 +54,11 @@ def _ler_json(caminho):
         return None
 
 
+@pyscript_compile
 def _gravar_json(caminho, dados):
+    import json
+    import os
+    os.makedirs(os.path.dirname(caminho), exist_ok=True)
     with open(caminho, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False)
 
@@ -146,7 +152,7 @@ class MundoHA:
         return r["response"]["speech"]["plain"]["speech"]
 
     def definir_expiracao(self, reserva, quando):
-        dados = _ler_json(ARQ_HOSPEDE) or {}
+        dados = task.executor(_ler_json, ARQ_HOSPEDE) or {}
         dados["credencial_expira"] = quando.isoformat()
         task.executor(_gravar_json, ARQ_HOSPEDE, dados)
 
@@ -169,7 +175,7 @@ def _montar_cadastro():
     """Hóspede atual a partir do snapshot persistido (sobrevive ao check-out,
     quando o script de encerramento apaga nome/telefone/código)."""
     cad = guests.Cadastro(sal=_SAL)
-    d = _ler_json(ARQ_HOSPEDE)
+    d = task.executor(_ler_json, ARQ_HOSPEDE)
     if d and d.get("checkin") and d.get("checkout"):
         cad.adicionar(guests.Reserva(
             id=d.get("id", "atual"), nome=d.get("nome", ""),
@@ -205,16 +211,22 @@ def _entregar(sessao, texto):
                              value=texto[:254])
 
 
+@pyscript_compile
+def _append_auditoria(caminho, evs):
+    import json
+    import os
+    os.makedirs(os.path.dirname(caminho), exist_ok=True)
+    with open(caminho, "a", encoding="utf-8") as f:
+        for e in evs:
+            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+
+
 def _persistir_auditoria(qtd_antes):
     novos = _AUD.eventos[qtd_antes:]
     if not novos:
         return
 
-    def _append(evs):
-        with open(ARQ_AUDIT, "a", encoding="utf-8") as f:
-            for e in evs:
-                f.write(json.dumps(e, ensure_ascii=False) + "\n")
-    task.executor(_append, novos)
+    task.executor(_append_auditoria, ARQ_AUDIT, novos)
     ultimo = novos[-1]
     input_text.set_value(entity_id=H_STATUS,
                          value=("%s %s" % (ultimo["ts"][11:16],
@@ -260,7 +272,7 @@ def _tick():
 def botanico_snapshot_hospede(**kw):
     """Guarda (com o código em hash) os dados do hóspede enquanto o acesso
     está ativo, e registra a hora em que a credencial expirou."""
-    dados = _ler_json(ARQ_HOSPEDE) or {}
+    dados = task.executor(_ler_json, ARQ_HOSPEDE) or {}
     if state.get("input_boolean.hospede_acesso_ativo") == "on":
         try:
             r = service.call("calendar", "get_events", return_response=True,
