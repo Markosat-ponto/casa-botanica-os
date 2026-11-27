@@ -3,8 +3,9 @@
 > Ponto de entrada para o Theo e para qualquer agente (Claude, Codex, ChatGPT)
 > que continue o projeto. Leia este arquivo antes de mexer em qualquer coisa.
 
-**Status (27/11/2026):** núcleo implementado e validado **em simulação**.
-Nada foi instalado no Home Assistant. Operações físicas autônomas: **bloqueadas**.
+**Status (27/11/2026):** núcleo instalado no HA em **modo simulado** (decide,
+registra e avisa o Theo, mas não move o portão). Ainda não recebe mensagens
+reais dos canais. Operações físicas autônomas: **bloqueadas**.
 
 ## Mapa
 

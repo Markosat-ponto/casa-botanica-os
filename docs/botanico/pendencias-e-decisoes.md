@@ -38,10 +38,12 @@ fotocélula (a maioria tem) e se já existe uma instalada e não ligada.
 
 ## Depende do Theo
 
-- [ ] Aprovar Etapa A (instalação em sombra) — lote único.
+- [x] Etapa A instalada em modo simulado (27/11/2026).
 - [x] Correção do agente de conversa do hóspede (aplicada em 27/11/2026).
 - [ ] Novo agente do hóspede (Botânico v2) com identidade do mascote.
-- [ ] Aprovar "modo suporte" do painel após check-out (Etapa B).
+- [ ] Canal de suporte após o check-out. O painel não serve (o hóspede é
+      deslogado). Proposta: WhatsApp — a mensagem do hóspede ao número da
+      casa é identificada pelo telefone e entra no Botânico v2.
 - [ ] Cronometrar o portão junto com o agente (Etapa C).
 - [ ] Decidir fotocélula e botão físico.
 - [ ] Ajustar regra de late checkout (padrão 13h) e diárias no HA (hoje R$ 0).

@@ -42,6 +42,22 @@ motor, testar reversão com obstáculo (caixa de papelão) e o Theo ligar
 | Sem internet | Botânico continua conversando no painel (rede local), mas não comanda portão (integração em nuvem); hóspede usa controle/chave; Theo é avisado quando a internet volta |
 | Sensor do portão oscilando | protocolo bloqueia sozinho; verificar alinhamento do ímã |
 
+## Como foi instalado / como atualizar (sem acesso a arquivos)
+
+O HA baixa os arquivos do repositório público pela integração Downloader
+(pasta base `/config/pyscript`), sempre com URL fixada em um commit:
+
+```
+downloader.download_file
+  url: https://raw.githubusercontent.com/Markosat-ponto/casa-botanica-os/<SHA>/botanico/core/<arquivo>.py
+  subdir: modules/botanico/core      (app: sem subdir, filename botanico_v2.py)
+  overwrite: true
+```
+
+Depois: `pyscript.reload` e conferir o log (`Failed to load` = não carregou,
+nada mais é afetado). Teste silencioso: evento `botanico_mensagem` com
+`canal: teste`.
+
 ## Atualizar o núcleo
 
 1. Alterar código no repositório e rodar os testes.
