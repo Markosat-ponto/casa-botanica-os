@@ -43,7 +43,7 @@ PORTAO = {
 HOSPEDE = {
     # Janela de suporte após o fim das credenciais: o hóspede validado ainda
     # pode pedir ajuda para SAIR (nunca para entrar) durante este período.
-    "suporte_horas_apos_expiracao": 6,
+    "suporte_horas_apos_expiracao": 5,
     # Mesmo que a credencial expire cedo, suporte de saída vale ao menos até:
     "suporte_minimo_ate_hora": 18,
     # Tempo para o hóspede confirmar que o veículo saiu antes de alertar o Theo.

@@ -206,6 +206,9 @@ def _bot():
     return _BOT
 
 
+_ENVIADAS = {}      # remetente -> (texto, epoch) para evitar eco/loop
+
+
 def _entregar(sessao, texto):
     canal, remetente = sessao.split(":", 1)
     event.fire("botanico_resposta", sessao=sessao, canal=canal,
@@ -213,6 +216,16 @@ def _entregar(sessao, texto):
     if canal == "painel":
         input_text.set_value(entity_id="input_text.botanico_hospede_resposta",
                              value=texto[:254])
+    elif canal == "whatsapp":
+        # Texto simples (sem áudio = sem custo de API). Só chega aqui para
+        # remetente identificado como hóspede da reserva atual.
+        _ENVIADAS[remetente] = (texto.strip(), time.time())
+        try:
+            service.call("whatsapp", "send_message", target=remetente,
+                         message="🌿 " + texto if not texto.startswith("🌿")
+                         else texto)
+        except Exception as e:
+            log.error("Botânico: falha ao responder no WhatsApp: %s" % e)
 
 
 @pyscript_compile
@@ -243,7 +256,22 @@ def botanico_mensagem(canal=None, remetente=None, texto=None, **kw):
         return
     bot = _bot()
     n = len(_AUD.eventos)
-    for r in bot.receber(str(canal), str(remetente), str(texto)[:500]):
+    canal, remetente, texto = str(canal), str(remetente), str(texto)[:500]
+    if canal == "whatsapp":
+        # 1) eco da nossa própria resposta (proteção contra loop)
+        ult = _ENVIADAS.get(remetente)
+        if ult and ult[0] in texto and time.time() - ult[1] < 120:
+            return
+        # 2) só responde hóspede da reserva atual / janela de saída;
+        #    número desconhecido: não responde (o aviso ao Theo já existe)
+        if guests.identificar(bot.cad, "whatsapp", remetente,
+                              datetime.now()) is None:
+            _AUD.registrar(datetime.now().isoformat(timespec="seconds"),
+                           "ignorado", "whatsapp",
+                           "mensagem de número que não é hóspede atual")
+            _persistir_auditoria(n)
+            return
+    for r in bot.receber(canal, remetente, texto):
         _entregar("%s:%s" % (canal, remetente), r)
     _persistir_auditoria(n)
 
@@ -288,6 +316,10 @@ def botanico_snapshot_hospede(**kw):
         except Exception:
             atual = []
         codigo = state.get("input_text.hospede_codigo_de_acesso_atual") or ""
+        if atual:
+            ini_atual = str(atual[0]["start"])[:10]
+            if str(dados.get("checkin", ""))[:10] != ini_atual:
+                dados = {}          # reserva nova: não herda dados da anterior
         dados.update({
             "nome": state.get("input_text.hospede_nome") or dados.get("nome", ""),
             "telefone": state.get("input_text.hospede_telefone_whatsapp")
