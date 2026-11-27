@@ -39,7 +39,8 @@ fotocélula (a maioria tem) e se já existe uma instalada e não ligada.
 ## Depende do Theo
 
 - [ ] Aprovar Etapa A (instalação em sombra) — lote único.
-- [ ] Aprovar correção do agente de conversa do hóspede (ver relatório privado).
+- [x] Correção do agente de conversa do hóspede (aplicada em 27/11/2026).
+- [ ] Novo agente do hóspede (Botânico v2) com identidade do mascote.
 - [ ] Aprovar "modo suporte" do painel após check-out (Etapa B).
 - [ ] Cronometrar o portão junto com o agente (Etapa C).
 - [ ] Decidir fotocélula e botão físico.
