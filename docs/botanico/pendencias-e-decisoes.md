@@ -11,6 +11,10 @@
 6. **Saída ≠ credencial:** janela de suporte de saída após a expiração.
 7. **Começa em modo sombra** e volta para ele após cada reinício.
 8. **Repositório público:** diagnóstico de segurança fica fora dele.
+9. **Sem serviços pagos (decisão do Theo, 28/11/2026):** nada de PMS/channel
+   manager ou outras assinaturas. Canais: WhatsApp, portal do hóspede e
+   painel. Airbnb: só leitura do aviso por e-mail + rascunho de resposta
+   para o Theo enviar (sem automação do site do Airbnb).
 
 ## Limitações conhecidas
 
@@ -43,10 +47,9 @@ fotocélula (a maioria tem) e se já existe uma instalada e não ligada.
 - [ ] Novo agente do hóspede (Botânico v2) com identidade do mascote.
 - [x] Canal pós check-out: painel em modo suporte até 18h + WhatsApp
       (27/11/2026).
-- [ ] Airbnb: sem API de mensagens. Hoje o Botânico só lê o e-mail de aviso
-      e repassa ao Theo. Decidir: mensagem programada no Airbnb indicando o
-      WhatsApp/painel do Botânico (o Theo configura no app) e/ou o Botânico
-      puxar a conversa para o WhatsApp quando o hóspede escrever no Airbnb.
+- [ ] Airbnb (sem custo): rascunho de resposta enviado ao Theo quando chegar
+      mensagem de hóspede pelo e-mail de aviso; mensagem programada no app
+      do Airbnb indicando o WhatsApp/portal do Botânico.
 - [ ] Verificar (passivo) se mensagens que o Theo envia a terceiros entram
       na automação de comandos do WhatsApp (opção "self messages" ligada).
 - [ ] Revisar o fluxo de envio das credenciais ao hóspede (detalhes no
