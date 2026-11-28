@@ -1,5 +1,16 @@
 # Changelog — Botânico
 
+## 2026-11-28 — lembrete de reserva repetindo
+
+- Causa: a confirmação "vi" do Theo só valia em mensagens de até 4 palavras;
+  "Vi e já vou responder ele lá pelo chat do Airbnb" foi para a IA e a
+  reserva ficou pendente, repetindo o lembrete a cada 15 min. A mensagem do
+  hóspede (e-mail "RE:") não foi confundida com reserva nova.
+- Correção na automação de comandos do WhatsApp (backup no HA): "vi",
+  "visto", "ciente", "resolvi" nas 3 primeiras palavras também valem em
+  frases longas; testado com 9 frases (inclusive as que não devem valer).
+- Lembrete por voz de reserva pendente: confirmado desligado.
+
 ## 2026-11-28 — coanfitrião 24 h
 
 - O Botânico não é "turno da noite": atende a qualquer hora. Quando o Theo
