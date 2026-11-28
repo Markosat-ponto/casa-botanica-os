@@ -175,10 +175,24 @@ def _cfg_portao():
     return cfg
 
 
+def _validar_no_portal(codigo):
+    """Pergunta ao portal do hóspede se o código de acesso é válido.
+    Contrato (tarefa 036 do canal): pyscript.oliva_validar_codigo
+    {quarto, codigo} -> {"valido": bool}. O portal limita tentativas e o
+    Botânico nunca recebe nem guarda a senha. Sem o serviço: inválido."""
+    try:
+        r = service.call("pyscript", "oliva_validar_codigo",
+                         return_response=True, quarto="oliva",
+                         codigo=str(codigo))
+        return bool((r or {}).get("valido", False))
+    except Exception:
+        return False
+
+
 def _montar_cadastro():
     """Hóspede atual a partir do snapshot persistido (sobrevive ao check-out,
     quando o script de encerramento apaga nome/telefone/código)."""
-    cad = guests.Cadastro(sal=_SAL)
+    cad = guests.Cadastro(sal=_SAL, validador_externo=_validar_no_portal)
     d = task.executor(_ler_json, ARQ_HOSPEDE)
     if d and d.get("checkin") and d.get("checkout"):
         cad.adicionar(guests.Reserva(
@@ -335,7 +349,8 @@ def botanico_snapshot_hospede(**kw):
             dados["codigo_reserva_hash"] = guests.hash_codigo(m.group(1), _SAL)
         dados["quarto"] = "oliva"
         dados["id"] = ini[:10]
-    if state.get("input_boolean.hospede_acesso_ativo") == "on" and dados:
+    if (state.get("input_boolean.hospede_acesso_ativo") == "on" and dados
+            and dados.get("origem") != "portal"):
         codigo = state.get("input_text.hospede_codigo_de_acesso_atual") or ""
         tel = state.get("input_text.hospede_telefone_whatsapp") or ""
         nome = state.get("input_text.hospede_nome") or ""
@@ -347,6 +362,38 @@ def botanico_snapshot_hospede(**kw):
             dados["codigo_hash"] = guests.hash_codigo(codigo, _SAL)
         dados["acesso_ja_ativo"] = True
         dados["credencial_expira"] = None
-    elif dados.get("acesso_ja_ativo") and not dados.get("credencial_expira"):
+    elif (dados.get("acesso_ja_ativo") and not dados.get("credencial_expira")
+          and dados.get("origem") != "portal"):
+        # só o painel antigo usa o helper; o portal avisa por evento
         dados["credencial_expira"] = datetime.now().isoformat(timespec="seconds")
     task.executor(_gravar_json, ARQ_HOSPEDE, dados)
+
+
+@event_trigger("botanico_acesso_hospede")
+def botanico_acesso_do_portal(acao=None, quarto=None, nome=None, telefone=None,
+                              saida_prevista=None, geracao=None, **kw):
+    """Aviso do portal do hóspede (contrato da tarefa 036): acesso gerado,
+    encerrado ou expirado. Nunca traz senha/código."""
+    if str(quarto or "oliva") != "oliva" or acao not in (
+            "gerado", "encerrado", "expirado"):
+        return
+    dados = task.executor(_ler_json, ARQ_HOSPEDE) or {}
+    dados["origem"] = "portal"
+    if acao == "gerado":
+        dados["acesso_ja_ativo"] = True
+        dados["geracao"] = str(geracao or "")
+        if nome:
+            dados["nome"] = str(nome)
+        if telefone:
+            dados["telefone"] = str(telefone)     # só indício, não prova
+        dados["credencial_expira"] = (str(saida_prevista)[:19]
+                                      if saida_prevista else None)
+    else:
+        agora = datetime.now().isoformat(timespec="seconds")
+        atual = dados.get("credencial_expira")
+        if not atual or str(atual) > agora:
+            dados["credencial_expira"] = agora
+    task.executor(_gravar_json, ARQ_HOSPEDE, dados)
+    _AUD.registrar(datetime.now().isoformat(timespec="seconds"), "portal",
+                   "portal", "acesso do hóspede %s pelo portal" % acao)
+    _persistir_auditoria(len(_AUD.eventos) - 1)

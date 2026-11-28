@@ -270,6 +270,36 @@ class TelefoneNaoProva(unittest.TestCase):
         self.assertIn("cachorros", r)
 
 
+class PortalHospede(unittest.TestCase):
+    """Portal do hóspede (login próprio, senha só em hash no portal)."""
+
+    def test_chat_do_portal_e_verificado(self):
+        m, bot = novo_cenario()
+        r = falar(bot, ("portal", "oliva"), "quero sair com o carro")
+        self.assertIn("cachorros", r)
+
+    def test_codigo_validado_pelo_portal(self):
+        m, bot = novo_cenario()
+        pedidos = []
+        bot.cad.validador_externo = lambda c: pedidos.append(c) or c == "735204"
+        u = ("whatsapp", "5511944443333")
+        falar(bot, u, "quero sair com o carro")
+        r = falar(bot, u, "735204")
+        self.assertIn("cachorros", r)
+        self.assertEqual(pedidos, ["735204"])
+
+    def test_portal_fora_do_ar_nao_valida(self):
+        m, bot = novo_cenario()
+
+        def quebrado(c):
+            raise RuntimeError("portal indisponível")
+        bot.cad.validador_externo = quebrado
+        u = ("whatsapp", "5511944443333")
+        falar(bot, u, "quero sair com o carro")
+        r = falar(bot, u, "735204")
+        self.assertIn("Não encontrei", r)
+
+
 class Atendimento(unittest.TestCase):
     def test_emergencia(self):
         m, bot = novo_cenario()

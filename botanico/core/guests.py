@@ -60,10 +60,14 @@ class Cadastro:
     """Fonte de reservas. Em produção é alimentado pelo calendário Airbnb +
     helpers do painel; aqui é uma lista em memória."""
 
-    def __init__(self, sal):
+    def __init__(self, sal, validador_externo=None):
         self.sal = sal
         self.reservas = []
         self.tentativas = {}
+        # Função opcional texto -> bool que pergunta ao portal do hóspede se
+        # o código de acesso é válido (o portal guarda só hash forte; o
+        # Botânico nunca recebe a senha).
+        self.validador_externo = validador_externo
 
     def adicionar(self, reserva):
         self.reservas.append(reserva)
@@ -107,6 +111,15 @@ class Cadastro:
                     r.codigo_hash, h_acc):
                 self.tentativas.pop(sessao_id, None)
                 return r, "ok"
+        if len(digitos) >= 4 and self.validador_externo:
+            ativas = self.ativas_ou_em_suporte(agora)
+            try:
+                valido = bool(self.validador_externo(digitos))
+            except Exception:
+                valido = False
+            if valido and ativas:
+                self.tentativas.pop(sessao_id, None)
+                return ativas[0], "ok"
         self.tentativas[sessao_id] = n + 1
         return None, "invalido"
 
@@ -124,7 +137,7 @@ def parece_codigo(texto):
 
 # Canais onde o próprio canal já prova a identidade (dispositivo logado no
 # quarto). Telefone NÃO prova: o número do Airbnb pode ser de outra pessoa.
-CANAIS_VERIFICADOS = ("painel",)
+CANAIS_VERIFICADOS = ("painel", "portal")
 
 
 def identificar(cadastro, canal, remetente, agora):
@@ -133,7 +146,8 @@ def identificar(cadastro, canal, remetente, agora):
     canal: painel (remetente = quarto) | whatsapp (remetente = telefone)
            | site (sem identificação automática: pede código)
     """
-    if canal == "painel":
+    if canal in ("painel", "portal"):
+        # portal: sessão logada do portal do hóspede (remetente = quarto)
         return cadastro.por_quarto(remetente, agora)
     if canal == "whatsapp":
         return cadastro.por_telefone(remetente, agora)
