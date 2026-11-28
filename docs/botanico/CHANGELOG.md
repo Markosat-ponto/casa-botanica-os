@@ -1,5 +1,17 @@
 # Changelog — Botânico
 
+## 2026-11-28 — portão: diagnóstico e avisos falsos
+
+- Aviso "Portão aberto" com foto: vinha do sensor do pé do portão (lendo
+  "aberto" com o portão fechado), não de análise da câmera. Desligado
+  `input_boolean.portao_sensor_magnetico_confiavel` até o sensor ser fixado.
+- Diagnóstico: o módulo Tuya é de pulso (igual ao controle: abre, para,
+  fecha). "Fechar" logo após "abrir" pelo HA não gera pulso; correção dos
+  scripts depende de teste físico com o Theo.
+- Validador de código do Terracota confirmado no ar (`{"valido": false}` para
+  código errado). Tarefa 039 (botão fechar do portal + chat do Botânico no
+  portal) enviada ao Codex.
+
 ## 2026-11-28 — avisos do Airbnb mais claros
 
 - Automação "Airbnb — detalhes completos no WhatsApp" (backup no HA):
