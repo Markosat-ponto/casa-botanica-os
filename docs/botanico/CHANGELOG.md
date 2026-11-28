@@ -2,6 +2,13 @@
 
 ## 2026-11-28 — portão: diagnóstico e avisos falsos
 
+- Correção: desligar `portao_sensor_magnetico_confiavel` também bloqueou o
+  aviso principal de abertura (abertura real às 04:46 sem aviso). Religado.
+- Novo **Vigia do portão** (no lugar do lembrete antigo, backup no HA):
+  portão aberto sem fechar → aviso com 5 min à noite (22h–7h) e 15 min de
+  dia; push com foto + WhatsApp em texto; botão "Estou vendo / deixa aberto";
+  até 3 avisos; confirma quando fecha. Não aciona o portão.
+
 - Aviso "Portão aberto" com foto: vinha do sensor do pé do portão (lendo
   "aberto" com o portão fechado), não de análise da câmera. Desligado
   `input_boolean.portao_sensor_magnetico_confiavel` até o sensor ser fixado.
