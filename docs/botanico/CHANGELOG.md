@@ -1,5 +1,15 @@
 # Changelog — Botânico
 
+## 2026-11-28 — vários quartos e relatório da manhã
+
+- Botânico v2 atende Oliva e Terracota: um cadastro por quarto (calendário
+  de cada um), validação de código no portal do quarto certo
+  (`pyscript.<quarto>_validar_codigo`) e eventos de acesso por quarto.
+- Relatório da manhã (07:37): resumo da noite no celular do Theo, só quando
+  houve algo; ignora testes e mensagens de quem não é hóspede.
+- Conferido no HA: `pyscript.oliva_validar_codigo` (Codex, tarefa 036) no
+  ar e respondendo `{"valido": false}` para código errado. 40 testes.
+
 ## 2026-11-27 — integração com o portal do hóspede (botanico-ui)
 
 - O portal novo (pyscript no HA, login próprio do hóspede) passa a ser a
