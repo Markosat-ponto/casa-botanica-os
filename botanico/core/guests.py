@@ -114,12 +114,20 @@ class Cadastro:
         if len(digitos) >= 4 and self.validador_externo:
             ativas = self.ativas_ou_em_suporte(agora)
             try:
-                valido = bool(self.validador_externo(digitos))
+                # retorna o nome do quarto em que o código vale (ou True
+                # quando só há um quarto); falso/None = inválido
+                resp = self.validador_externo(digitos)
             except Exception:
-                valido = False
-            if valido and ativas:
+                resp = None
+            escolhida = None
+            if isinstance(resp, str) and resp:
+                cand = [r for r in ativas if r.quarto == resp]
+                escolhida = cand[0] if cand else None
+            elif resp is True and len(ativas) == 1:
+                escolhida = ativas[0]
+            if escolhida:
                 self.tentativas.pop(sessao_id, None)
-                return ativas[0], "ok"
+                return escolhida, "ok"
         self.tentativas[sessao_id] = n + 1
         return None, "invalido"
 

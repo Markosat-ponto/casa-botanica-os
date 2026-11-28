@@ -300,6 +300,33 @@ class PortalHospede(unittest.TestCase):
         self.assertIn("Não encontrei", r)
 
 
+class VariosQuartos(unittest.TestCase):
+    def _com_terracota(self):
+        from datetime import timedelta
+        from botanico.core import guests
+        m, bot = novo_cenario()
+        r0 = bot.cad.reservas[0]
+        bot.cad.adicionar(guests.Reserva(
+            id="R2", nome="Bruno Lima", quarto="terracota",
+            checkin=r0.checkin, checkout=r0.checkout + timedelta(days=1)))
+        return m, bot
+
+    def test_portal_de_cada_quarto_identifica_o_quarto_certo(self):
+        m, bot = self._com_terracota()
+        bot.receber("portal", "terracota", "oi")
+        s = bot.sessoes["portal:terracota"]
+        self.assertEqual(s.reserva.quarto, "terracota")
+
+    def test_codigo_validado_no_portal_do_terracota(self):
+        m, bot = self._com_terracota()
+        bot.cad.validador_externo = lambda c: "terracota" if c == "918273" else None
+        u = ("whatsapp", "5511933332222")
+        falar(bot, u, "quero sair com o carro")
+        falar(bot, u, "918273")
+        self.assertEqual(bot.sessoes["whatsapp:5511933332222"].reserva.quarto,
+                         "terracota")
+
+
 class Atendimento(unittest.TestCase):
     def test_emergencia(self):
         m, bot = novo_cenario()
