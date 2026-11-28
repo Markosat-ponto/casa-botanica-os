@@ -1,5 +1,18 @@
 # Changelog — Botânico
 
+## 2026-11-28 — avisos do Airbnb mais claros
+
+- Automação "Airbnb — detalhes completos no WhatsApp" (backup no HA):
+  - mensagem de hóspede não marca mais "reserva pendente" (era a causa dos
+    lembretes "Reserva ainda pendente" depois de cada mensagem);
+  - pedido de reserva destacado como "PRECISA DA SUA APROVAÇÃO", com
+    datas, noites, valor a receber e código;
+  - "ÚLTIMA HORA — check-in HOJE/AMANHÃ" quando for o caso;
+  - quarto em destaque na 1ª linha (🟢 Oliva / 🟠 Terracota), detectado
+    pelo anúncio, pelo assunto ou pelo corpo do e-mail.
+- Testado com modelos de texto; ainda não com um e-mail real de pedido de
+  reserva (formato do assunto a confirmar no próximo pedido).
+
 ## 2026-11-28 — lembrete de reserva repetindo
 
 - Causa: a confirmação "vi" do Theo só valia em mensagens de até 4 palavras;
