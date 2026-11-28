@@ -1,5 +1,19 @@
 # Changelog — Botânico
 
+## 2026-11-28 — coanfitrião 24 h
+
+- O Botânico não é "turno da noite": atende a qualquer hora. Quando o Theo
+  está atendendo, recua; quando o Theo não responde, assume.
+- Mensagem comum de hóspede no WhatsApp: aviso ao Theo com botão "Deixa
+  comigo"; sem resposta em 4 min, o Botânico responde. Urgências (emergência,
+  saída/portão, confirmações, códigos) e canais do quarto: na hora.
+- Comandos do Theo no WhatsApp ("Mensagem para você mesmo"): "deixa comigo"
+  (silêncio por 2 h) e "Botânico, assume". Interceptados no início da
+  automação de comandos (backup no HA).
+- Se o gateway informar mensagens enviadas pelo Theo a um hóspede, o
+  Botânico recua por 2 h com aquele contato (automação nova).
+- Resumo diário passou a cobrir 24 h ("o que resolvi sem você"). 44 testes.
+
 ## 2026-11-28 — vários quartos e relatório da manhã
 
 - Botânico v2 atende Oliva e Terracota: um cadastro por quarto (calendário
