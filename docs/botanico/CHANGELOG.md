@@ -1,5 +1,20 @@
 # Changelog — Botânico
 
+## 2026-11-27 — integração com o portal do hóspede (botanico-ui)
+
+- O portal novo (pyscript no HA, login próprio do hóspede) passa a ser a
+  fonte de acessos; o painel antigo do HA não é mais usado.
+- Botânico v2: canal `portal` (sessão logada = verificado), escuta o evento
+  `botanico_acesso_hospede` (gerado/encerrado/expirado, sem segredos) e
+  valida códigos de acesso perguntando ao serviço
+  `pyscript.oliva_validar_codigo` (resposta só válido/inválido). Sem o
+  serviço, todo código é inválido. 38 testes aprovados.
+- Lado do portal (evento, serviço, modo ajuda após encerrar, envio seguro
+  de credenciais): tarefa 036 do canal, com o Codex.
+- Reload do Botânico passa a ser só do arquivo dele
+  (`pyscript.reload` com `global_ctx: file.botanico_v2`), para não
+  recarregar o portal do hóspede junto.
+
 ## 2026-11-27 — identidade: telefone não prova quem é o hóspede
 
 - O telefone cadastrado numa reserva pode ser de outra pessoa.

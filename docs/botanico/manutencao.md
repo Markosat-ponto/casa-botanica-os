@@ -54,7 +54,7 @@ downloader.download_file
   overwrite: true
 ```
 
-Depois: `pyscript.reload` e conferir o log (`Failed to load` = não carregou,
+Depois: `pyscript.reload` com `global_ctx: file.botanico_v2` (só o Botânico; o portal do hóspede também é pyscript) e conferir o log (`Failed to load` = não carregou,
 nada mais é afetado). Teste silencioso: evento `botanico_mensagem` com
 `canal: teste`.
 
