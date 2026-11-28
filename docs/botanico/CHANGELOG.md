@@ -12,6 +12,10 @@
     pelo anúncio, pelo assunto ou pelo corpo do e-mail.
 - Testado com modelos de texto; ainda não com um e-mail real de pedido de
   reserva (formato do assunto a confirmar no próximo pedido).
+- Causa de os avisos virem só com o nome do hóspede: a integração IMAP
+  cortava o e-mail em 2.048 caracteres (o do Airbnb tem muito espaço em
+  branco). Limite elevado para 30.000 (opção da integração, reversível).
+  Código da reserva também passa a ser lido do link `details/HM...`.
 
 ## 2026-11-28 — lembrete de reserva repetindo
 
