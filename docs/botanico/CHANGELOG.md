@@ -2,6 +2,17 @@
 
 ## 2026-11-28 — portão: diagnóstico e avisos falsos
 
+- Vigia + IA (aprovado pelo Theo; OpenAI, pago por uso): a cada aviso a IA
+  olha a foto e diz ABERTO / FECHADO / NÃO VISÍVEL. Só opina: o 1º aviso
+  sempre sai; se ela vir FECHADO, não repete. O aviso também traz a
+  descrição feita na abertura, quando for do mesmo episódio.
+- Card "IA DA CÂMERA" na Central de Comando (Segurança): análises do mês e
+  custo estimado (valor por análise ajustável; saldo real só no site da
+  OpenAI). Contador zera todo dia 1.
+- Câmera da entrada reconectada pelo ONVIF (mudou de endereço na rede);
+  aviso novo se ela ficar 30 min desconectada. Sensor de movimento ainda
+  a testar (parece travado em "detectado").
+
 - Correção: desligar `portao_sensor_magnetico_confiavel` também bloqueou o
   aviso principal de abertura (abertura real às 04:46 sem aviso). Religado.
 - Novo **Vigia do portão** (no lugar do lembrete antigo, backup no HA):
