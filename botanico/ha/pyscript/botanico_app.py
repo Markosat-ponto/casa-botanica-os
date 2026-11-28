@@ -340,7 +340,7 @@ def botanico_snapshot_hospede(**kw):
     if atual:
         e = atual[0]
         ini, fim = str(e["start"]), str(e["end"])
-        if str(dados.get("checkin", ""))[:10] != ini[:10]:
+        if dados.get("checkin") and str(dados["checkin"])[:10] != ini[:10]:
             dados = {}              # reserva nova: não herda a anterior
         dados["checkin"] = (ini if "T" in ini else ini + "T14:00:00")[:19]
         dados["checkout"] = (fim if "T" in fim else fim + "T11:00:00")[:19]
