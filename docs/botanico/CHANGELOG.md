@@ -16,6 +16,11 @@
   cortava o e-mail em 2.048 caracteres (o do Airbnb tem muito espaço em
   branco). Limite elevado para 30.000 (opção da integração, reversível).
   Código da reserva também passa a ser lido do link `details/HM...`.
+- Mensagem de hóspede sai limpa: quem escreveu, período e o texto, sem o
+  restante do e-mail (links genéricos, `%opentrack%`, avisos do Airbnb).
+  Único link mantido: o de "Responder", que abre direto a conversa no app
+  (também no aviso de pedido de reserva). Pedido do Theo; testado com texto
+  de exemplo, falta conferir no próximo e-mail real.
 
 ## 2026-11-28 — lembrete de reserva repetindo
 
