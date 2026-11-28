@@ -4,6 +4,8 @@
 
 - O portal novo (pyscript no HA, login próprio do hóspede) passa a ser a
   fonte de acessos; o painel antigo do HA não é mais usado.
+- O Theo desativou o usuário antigo do hóspede no HA (Configurações →
+  Pessoas → Usuários; reversível pelo mesmo botão "Ativo").
 - Botânico v2: canal `portal` (sessão logada = verificado), escuta o evento
   `botanico_acesso_hospede` (gerado/encerrado/expirado, sem segredos) e
   valida códigos de acesso perguntando ao serviço
