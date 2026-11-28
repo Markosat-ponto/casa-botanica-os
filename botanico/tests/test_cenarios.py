@@ -327,6 +327,23 @@ class VariosQuartos(unittest.TestCase):
                          "terracota")
 
 
+class Coanfitriao(unittest.TestCase):
+    def test_urgencia_nao_espera_o_theo(self):
+        self.assertFalse(policy.precisa_esperar_theo("saida_portao", "whatsapp"))
+        self.assertFalse(policy.precisa_esperar_theo("emergencia", "whatsapp"))
+
+    def test_pergunta_comum_no_whatsapp_espera(self):
+        self.assertTrue(policy.precisa_esperar_theo("pergunta_livre", "whatsapp"))
+
+    def test_quarto_nunca_espera(self):
+        self.assertFalse(policy.precisa_esperar_theo("pergunta_livre", "portal"))
+
+    def test_comandos_do_theo(self):
+        self.assertEqual(policy.comando_do_theo("Já vi, deixa comigo"), "assumir")
+        self.assertEqual(policy.comando_do_theo("Botânico, assume"), "devolver")
+        self.assertIsNone(policy.comando_do_theo("liga a luz da sala"))
+
+
 class Atendimento(unittest.TestCase):
     def test_emergencia(self):
         m, bot = novo_cenario()

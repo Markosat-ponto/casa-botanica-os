@@ -74,3 +74,45 @@ def avaliar(acao, contexto):
     if contexto.get("origem_admin"):
         return True, "autorizado pelo anfitrião", False
     return False, "exige autorização do anfitrião", True
+
+
+# ------------------------------------------------------------------ coanfitrião
+# O Botânico é coanfitrião 24 h: quando o Theo está atendendo, ele recua;
+# quando o Theo não responde, ele assume. Urgências nunca esperam.
+URGENTES = ("emergencia", "saida_portao", "fechar_portao", "veiculo_saiu",
+            "confirmar_sim", "confirmar_nao", "codigo_acesso")
+
+ESPERA_THEO_MIN = 4          # minutos esperando o Theo antes de responder
+THEO_ASSUME_HORAS = 2        # "deixa comigo" silencia o Botânico por 2 h
+
+COMANDOS_THEO_ASSUMIR = ("deixa comigo", "ja vi", "já vi", "eu respondo",
+                         "eu resolvo", "to vendo", "tô vendo", "estou vendo",
+                         "pode deixar", "botanico para", "botânico para")
+COMANDOS_THEO_DEVOLVER = ("botanico assume", "botânico assume", "assume",
+                          "pode responder", "responde voce", "responde você")
+
+
+def precisa_esperar_theo(intencao, canal):
+    """Mensagem comum de hóspede no WhatsApp espera o Theo alguns minutos;
+    urgências e canais do quarto (painel/portal) são atendidos na hora."""
+    if canal != "whatsapp":
+        return False
+    return intencao not in URGENTES
+
+
+def comando_do_theo(texto):
+    """'assumir' | 'devolver' | None a partir de uma mensagem do Theo."""
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(texto or "").lower())
+    t = " ".join("".join([c for c in t if not unicodedata.combining(c)]).split())
+    for c in COMANDOS_THEO_DEVOLVER:
+        c2 = "".join([x for x in unicodedata.normalize("NFKD", c)
+                      if not unicodedata.combining(x)])
+        if c2 in t:
+            return "devolver"
+    for c in COMANDOS_THEO_ASSUMIR:
+        c2 = "".join([x for x in unicodedata.normalize("NFKD", c)
+                      if not unicodedata.combining(x)])
+        if c2 in t:
+            return "assumir"
+    return None

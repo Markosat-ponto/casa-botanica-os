@@ -34,6 +34,8 @@ import botanico.core.audit as audit
 import botanico.core.config as config
 import botanico.core.gate as gate
 import botanico.core.guests as guests
+import botanico.core.intents as intents
+import botanico.core.policy as policy
 
 COVER = config.PORTAO["entidade_cover"]
 CAMERA = config.PORTAO["camera_entidade"]
@@ -307,6 +309,25 @@ def botanico_mensagem(canal=None, remetente=None, texto=None, **kw):
                            "mensagem de número que não é hóspede atual")
             _persistir_auditoria(n)
             return
+    if canal == "whatsapp":
+        if _theo_atendendo(remetente):
+            _AUD.registrar(datetime.now().isoformat(timespec="seconds"),
+                           "coanfitriao", "whatsapp:" + remetente,
+                           "Theo está atendendo; Botânico em silêncio")
+            _persistir_auditoria(n)
+            return
+        intencao = intents.classificar_local(texto)
+        if policy.precisa_esperar_theo(intencao, canal):
+            _avisar_theo_com_botao(remetente, texto)
+            task.sleep(policy.ESPERA_THEO_MIN * 60)
+            if _theo_atendendo(remetente):
+                _AUD.registrar(datetime.now().isoformat(timespec="seconds"),
+                               "coanfitriao", "whatsapp:" + remetente,
+                               "Theo assumiu antes do Botânico responder")
+                _persistir_auditoria(n)
+                return
+            bot = _bot()
+            n = len(_AUD.eventos)
     for r in bot.receber(canal, remetente, texto):
         _entregar("%s:%s" % (canal, remetente), r)
     _persistir_auditoria(n)
@@ -444,10 +465,11 @@ def _ler_auditoria_desde(caminho, desde_iso):
 
 @time_trigger("cron(37 7 * * *)")
 def botanico_relatorio_da_manha():
-    """Resumo do que aconteceu desde as 19h de ontem (só se houver algo).
-    Silencioso: notificação comum no celular do Theo, sem voz."""
+    """Resumo diário das últimas 24 h: o que o Botânico resolveu sem o Theo
+    (só se houver algo). Avisos importantes já saem na hora; este é o
+    apanhado. Silencioso: notificação comum, sem voz."""
     from datetime import timedelta
-    desde = (datetime.now() - timedelta(hours=12, minutes=37)).isoformat(
+    desde = (datetime.now() - timedelta(hours=24)).isoformat(
         timespec="seconds")
     evs = task.executor(_ler_auditoria_desde, ARQ_AUDIT, desde)
     relevantes = [e for e in evs if e.get("tipo") not in ("mensagem",)]
@@ -456,12 +478,71 @@ def botanico_relatorio_da_manha():
     pend = len([e for e in evs if e.get("nivel") == "pendente_theo"])
     alertas = len([e for e in evs if e.get("nivel") in ("alerta", "critico")])
     linhas = ["%s %s" % (e["ts"][11:16], e["resumo"]) for e in relevantes[-8:]]
-    texto = ("Noite: %d registros, %d alertas, %d pedidos para você.\n%s\n"
+    texto = ("Últimas 24 h: %d registros, %d alertas, %d pedidos para você.\n%s\n"
              "Detalhes no painel BOTÂNICO — Central." % (
                  len(evs), alertas, pend, "\n".join(linhas)))
     for alvo in NOTIFY:
         try:
-            service.call("notify", alvo, title="🌿 Botânico — relatório da manhã",
+            service.call("notify", alvo, title="🌿 Botânico — o que resolvi sem você",
                          message=texto[:1500])
         except Exception as e:
             log.warning("Botânico: relatório da manhã falhou: %s" % e)
+
+
+# ------------------------------------------------------------- coanfitrião
+_THEO_ATE = {}        # remetente (ou "*") -> epoch até quando o Theo atende
+
+
+def _theo_atendendo(remetente):
+    agora = time.time()
+    return _THEO_ATE.get("*", 0) > agora or _THEO_ATE.get(remetente, 0) > agora
+
+
+def _theo_assume(remetente, horas=None):
+    _THEO_ATE[remetente] = time.time() + 3600 * (horas or
+                                                 policy.THEO_ASSUME_HORAS)
+
+
+def _avisar_theo_com_botao(remetente, texto):
+    msg = ("Hóspede: %s\nRespondo em %d min se você não assumir." %
+           (str(texto)[:200], policy.ESPERA_THEO_MIN))
+    for alvo in NOTIFY:
+        try:
+            service.call("notify", alvo, title="🌿 Botânico — mensagem de hóspede",
+                         message=msg,
+                         data={"actions": [{"action": "BOTANICO_ASSUMIR|" +
+                                            remetente,
+                                            "title": "Deixa comigo"}]})
+        except Exception as e:
+            log.warning("Botânico: aviso com botão falhou: %s" % e)
+
+
+@event_trigger("mobile_app_notification_action")
+def botanico_botao_deixa_comigo(action=None, **kw):
+    if not str(action or "").startswith("BOTANICO_ASSUMIR|"):
+        return
+    remetente = str(action).split("|", 1)[1]
+    _theo_assume(remetente)
+    _AUD.registrar(datetime.now().isoformat(timespec="seconds"), "coanfitriao",
+                   "whatsapp:" + remetente, "Theo tocou em 'Deixa comigo'")
+    _persistir_auditoria(len(_AUD.eventos) - 1)
+
+
+@event_trigger("botanico_theo_respondeu")
+def botanico_theo_respondeu_hospede(remetente=None, **kw):
+    """O Theo escreveu no chat do hóspede: o Botânico recua por 2 h."""
+    if remetente:
+        _theo_assume(str(remetente))
+
+
+@event_trigger("botanico_comando_theo")
+def botanico_comando_do_theo(texto=None, **kw):
+    cmd = policy.comando_do_theo(texto)
+    if cmd == "assumir":
+        _theo_assume("*")
+    elif cmd == "devolver":
+        _THEO_ATE.clear()
+    if cmd:
+        _AUD.registrar(datetime.now().isoformat(timespec="seconds"),
+                       "coanfitriao", "theo", "comando do Theo: %s" % cmd)
+        _persistir_auditoria(len(_AUD.eventos) - 1)
